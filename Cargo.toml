@@ -3,6 +3,12 @@ name = "mysqlpinger"
 version = "0.1.0"
 authors = ["ymgyt <yamaguchi7073xtt@gmail.com>"]
 edition = "2018"
+license = "MIT OR Apache-2.0"
+description = """
+mysql utility cli
+"""
+readme = "README.md"
+repository = "https://github.com/ymgyt/mysqlpinger"
 
 [dependencies]
 lazy_static = "1.4.0"

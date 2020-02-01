@@ -84,7 +84,7 @@ pub fn new(version: &str) -> App {
             Arg::with_name("forever")
                 .long("forever")
                 .help("retry without limit")
-                .conflicts_with("max_retry")
+                .conflicts_with("max_retry"),
         )
         .arg(
             Arg::with_name("interval")

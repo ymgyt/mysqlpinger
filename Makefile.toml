@@ -1,0 +1,3 @@
+[tasks.image]
+command = "docker"
+args = ["build", "-t", "mysqlpinger", "."]

@@ -2,7 +2,7 @@ use clap::ArgMatches;
 use log::info;
 use mysql::{Conn, Opts, OptsBuilder};
 use parse_duration;
-use std::{thread, time::Duration, borrow::Cow};
+use std::{borrow::Cow, thread, time::Duration};
 
 type BoxError = Box<dyn std::error::Error>;
 
@@ -49,7 +49,7 @@ impl MySQLPinger {
             db = self.opts.get_db_name().unwrap_or(""),
         );
 
-        let  mut attempt = 1;
+        let mut attempt = 1;
         let max_attempt = self.max_retry + 1;
         loop {
             if !self.forever && attempt > max_attempt {
@@ -78,7 +78,7 @@ impl MySQLPinger {
         }
     }
 
-    fn max_attempt_symbol(&self) ->  Cow<'static, str>{
+    fn max_attempt_symbol(&self) -> Cow<'static, str> {
         if self.forever {
             "♾ ".into()
         } else {
