@@ -1,64 +1,66 @@
-use clap::{App, Arg};
-use mysql::{OptsBuilder, Conn};
+use log::{error, info};
+use mysqlpinger::MySQLPinger;
+use std::time::Instant;
 
 fn main() {
+    let start = Instant::now();
     let version = env!("CARGO_PKG_VERSION");
+    let arg = mysqlpinger::arg_parser::new(version).get_matches();
 
-    let app =  App::new("mysqlpinger")
-        .about("ping to mysql server")
-        .version(version)
-        .arg(
-           Arg::with_name("host")
-               .long("host")
-               .short("h")
-               .takes_value(true)
-               .default_value("127.0.0.1")
-        )
-        .arg(
-            Arg::with_name("port")
-                .long("port")
-                .short("p")
-                .takes_value(true)
-                .default_value("3306")
-        )
-        .arg(
-            Arg::with_name("user")
-                .long("user")
-                .short("u")
-                .takes_value(true)
-                .default_value("root")
-        )
-        .arg(
-           Arg::with_name("pass")
-               .long("pass")
-               .alias("password")
-               .short("-P")
-               .takes_value(true)
-               .env("MYSQL_PASSWORD")
-        )
-        .arg(
-            Arg::with_name("dbname")
-                .index(1)
-                .required(true)
-        );
+    init_logger(arg.is_present("silent"), arg.occurrences_of("verbose"));
 
-    let m = app.get_matches();
+    let mut pinger = match MySQLPinger::from_arg(&arg) {
+        Ok(pinger) => pinger,
+        Err(err) => {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        }
+    };
 
-    // we need OptsBuilder type first, then calling building methods
-    let mut opts = OptsBuilder::default();
-    opts
-        .ip_or_hostname(m.value_of("host"))
-        .tcp_port(m.value_of("port").unwrap().parse::<u16>().unwrap())
-        .user(m.value_of("user"))
-        .pass(m.value_of("pass"))
-        .prefer_socket(false)
-        .db_name(m.value_of("dbname"));
-
-    let mut conn = Conn::new(opts).unwrap();
-    if conn.ping() {
-        println!("ping success!");
-    } else {
-        println!("ping failed");
+    match pinger.ping() {
+        Ok(_) => info!("OK (elapsed {:.3}sec)", start.elapsed().as_secs_f64()),
+        Err(err) => {
+            error!("{} (elapsed {:.3}sec)", err, start.elapsed().as_secs_f64());
+            std::process::exit(1);
+        }
     }
 }
 
+fn init_logger(silent: bool, verbose: u64) {
+    let mut builder = env_logger::Builder::new();
+
+    use env_logger::fmt::Color;
+    use log::{Level, LevelFilter};
+    use std::io::Write;
+    builder.format(|buf, record| {
+        let level_color = match record.level() {
+            Level::Trace => Color::White,
+            Level::Debug => Color::Blue,
+            Level::Info => Color::Green,
+            Level::Warn => Color::Yellow,
+            Level::Error => Color::Red,
+        };
+        let mut level_style = buf.style();
+        level_style.set_color(level_color);
+
+        writeln!(
+            buf,
+            "{level} {args}",
+            level = level_style.value(record.level()),
+            args = record.args(),
+        )
+    });
+
+    builder.filter(
+        None,
+        match (silent, verbose) {
+            (true, _) => LevelFilter::Error,
+            (_, 0) => LevelFilter::Info,
+            (_, 1) => LevelFilter::Debug,
+            (_, _) => LevelFilter::Trace,
+        },
+    );
+    builder.write_style(env_logger::WriteStyle::Auto);
+
+    builder.init();
+}

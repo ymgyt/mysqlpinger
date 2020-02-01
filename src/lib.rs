@@ -1,14 +1,4 @@
-use std::error::Error;
+pub mod arg_parser;
+mod pinger;
 
-pub struct MySQLPinger {}
-
-impl MySQLPinger {
-    pub fn new() -> Self {
-        Self{}
-    }
-
-    pub fn ping() -> Result<(), Box<dyn Error>> {
-        println!("ping");
-        Ok(())
-    }
-}
+pub use pinger::MySQLPinger;
