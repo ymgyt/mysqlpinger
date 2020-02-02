@@ -12,7 +12,7 @@ lazy_static! {
 
 pub fn new(version: &str) -> App {
     App::new("mysqlpinger")
-        .about("ping to mysql server")
+        .about("Ping to mysql server")
         .version(version)
         .global_setting(AppSettings::ColoredHelp)
         .global_setting(AppSettings::ColorAuto)
@@ -21,7 +21,7 @@ pub fn new(version: &str) -> App {
             Arg::with_name("host")
                 .long("host")
                 .short('h')
-                .help("mysql server hostname")
+                .help("MySQL server hostname")
                 .takes_value(true)
                 .default_value("127.0.0.1")
                 .value_name("HOST")
@@ -31,7 +31,7 @@ pub fn new(version: &str) -> App {
             Arg::with_name("port")
                 .long("port")
                 .short('p')
-                .help("mysql server port")
+                .help("MySQL server port")
                 .takes_value(true)
                 .default_value("3306")
                 .value_name("PORT")
@@ -41,7 +41,7 @@ pub fn new(version: &str) -> App {
             Arg::with_name("user")
                 .long("user")
                 .short('u')
-                .help("user for authentication")
+                .help("User for authentication")
                 .takes_value(true)
                 .default_value("root")
                 .value_name("USER")
@@ -52,7 +52,7 @@ pub fn new(version: &str) -> App {
                 .long("pass")
                 .alias("password")
                 .short('P')
-                .help("password for authentication")
+                .help("Password for authentication")
                 .takes_value(true)
                 .env("MYSQL_PASSWORD")
                 .value_name("PASS"),
@@ -61,13 +61,13 @@ pub fn new(version: &str) -> App {
             Arg::with_name("silent")
                 .long("silent")
                 .short('s')
-                .help("running with no logging"),
+                .help("Running with no logging"),
         )
         .arg(
             Arg::with_name("verbose")
                 .long("verbose")
                 .short('v')
-                .help("verbose")
+                .help("Verbose")
                 .multiple_occurrences(true)
                 .conflicts_with("silent"),
         )
@@ -75,7 +75,7 @@ pub fn new(version: &str) -> App {
             Arg::with_name("max_retry")
                 .long("max-retry")
                 .short('m')
-                .help("max retry count")
+                .help("Max retry count")
                 .takes_value(true)
                 .default_value("9")
                 .value_name("COUNT"),
@@ -83,21 +83,21 @@ pub fn new(version: &str) -> App {
         .arg(
             Arg::with_name("forever")
                 .long("forever")
-                .help("retry without limit")
+                .help("Retry without limit")
                 .conflicts_with("max_retry"),
         )
         .arg(
             Arg::with_name("interval")
                 .long("interval")
                 .short('i')
-                .help("retry ping interval")
+                .help("Retry ping interval")
                 .takes_value(true)
                 .default_value("1s")
                 .value_name("DURATION"),
         )
         .arg(
             Arg::with_name("dbname")
-                .help("database name")
+                .help("Database name")
                 .index(1)
                 .default_value("sys")
                 .value_name("DBNAME")
