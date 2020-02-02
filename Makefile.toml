@@ -23,6 +23,12 @@ script = [
 	"echo ${VERSION:? required}"
 ]
 
+[tasks.precommit]
+script = [
+    "cargo fmt",
+	"cargo clippy"
+]
+
 [tasks.publish]
 dependencies = [
 	"version",
