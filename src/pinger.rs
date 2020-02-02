@@ -52,7 +52,7 @@ impl MySQLPinger {
 
     pub fn stop(&self) {
         debug!("stop called");
-        self.canceled.store(true, Ordering::SeqCst)
+        self.canceled.store(true, Ordering::Relaxed)
     }
 
     pub fn ping(&self) -> Result<(), BoxError> {
@@ -75,7 +75,7 @@ impl MySQLPinger {
             if !self.forever && attempt > max_attempt {
                 return Err("Max retry count exceeded".into());
             }
-            if self.canceled.load(Ordering::SeqCst) {
+            if self.canceled.load(Ordering::Relaxed) {
                 return Err("Canceled".into());
             }
 
