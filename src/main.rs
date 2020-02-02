@@ -7,6 +7,7 @@ fn main() {
     let version = env!("CARGO_PKG_VERSION");
     let arg = mysqlpinger::arg_parser::new(version).get_matches();
 
+    init_signal_handler();
     init_logger(arg.is_present("silent"), arg.occurrences_of("verbose"));
 
     let mut pinger = match MySQLPinger::from_arg(&arg) {
@@ -24,6 +25,18 @@ fn main() {
             std::process::exit(1);
         }
     }
+}
+
+fn init_signal_handler() {
+    ctrlc::set_handler(move || {
+        // when user put Ctrl+C
+        // NG: ^CINFO ...
+        // OK: ^C
+        //     INFO ...
+        println!("");
+        info!("Handle Ctrl+C[SIGINT]");
+        std::process::exit(2);
+    }).expect("Error setting Ctrl-C handler");
 }
 
 fn init_logger(silent: bool, verbose: u64) {
