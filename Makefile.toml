@@ -1,3 +1,18 @@
 [tasks.image]
 command = "docker"
 args = ["build", "-t", "mysqlpinger", "."]
+
+[tasks.tag]
+script = [
+	"docker tag mysqlpinger ymgyt/mysqlpinger:${VERSION:? required}",
+	"docker tag mysqlpinger ymgyt/mysqlpinger:latest"
+]
+
+[tasks.push]
+script = [
+	"docker push ymgyt/mysqlpinger:${VERSION:? required}"
+]
+
+[tasks.install]
+command = "cargo"
+args = ["install", "--path", "."]
