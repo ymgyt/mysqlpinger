@@ -4,9 +4,15 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     static ref EXAMPLE: String = format!(
-        "{}\n    {}",
+        r#"{}
+    # Basic
+    mysqlpinger --pass=root --port=30303 <db_name>
+
+    # Docker
+    docker run --rm -t --network=<network> ymgyt/mysqlpinger:latest \
+       --user=user --pass=secret --host=<container_name> [--forever|--max-retry=20]
+    "#,
         "Example:".yellow(),
-        "mysqlpinger --pass=root --port=30303 ",
     );
 }
 
