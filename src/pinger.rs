@@ -41,7 +41,6 @@ impl MySQLPinger {
             .db_name(m.value_of("dbname"))
             .tcp_connect_timeout(Some(interval));
 
-
         Ok(Self {
             opts: Arc::new(builder.into()),
             interval,
@@ -64,7 +63,8 @@ impl MySQLPinger {
             user = self.opts.get_user().unwrap_or(""),
             db = self.opts.get_db_name().unwrap_or(""),
         );
-        debug!("interval:{interval:.1}sec attempt:{attempt}",
+        debug!(
+            "interval:{interval:.1}sec attempt:{attempt}",
             interval = self.interval.as_secs_f64(),
             attempt = self.max_attempt_symbol(),
         );
@@ -95,7 +95,12 @@ impl MySQLPinger {
                     }
                 }
                 Err(DriverError(DriverError::ConnectTimeout)) => {
-                    info!("{}/{} {}", attempt, self.max_attempt_symbol(), "Connection timeout");
+                    info!(
+                        "{}/{} {}",
+                        attempt,
+                        self.max_attempt_symbol(),
+                        "Connection timeout"
+                    );
                 }
                 Err(err) => return Err(Box::new(err)),
             }

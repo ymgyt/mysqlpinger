@@ -24,7 +24,7 @@ fn main() {
         // NG: ^CINFO ...
         // OK: ^C
         //     INFO ...
-        println!("");
+        println!();
         info!("Handle Ctrl+C [SIGINT] stopping pinger...");
         pinger2.stop();
 
