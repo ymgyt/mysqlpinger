@@ -4,10 +4,7 @@ use mysql::{Conn, Opts, OptsBuilder};
 use parse_duration;
 use std::{
     borrow::Cow,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    sync::atomic::{AtomicBool, Ordering},
     thread,
     time::Duration,
 };
@@ -15,7 +12,7 @@ use std::{
 type BoxError = Box<dyn std::error::Error>;
 
 pub struct MySQLPinger {
-    opts: Arc<Opts>,
+    opts: Opts,
     interval: Duration,
     forever: bool,
     max_retry: u64,
@@ -42,7 +39,7 @@ impl MySQLPinger {
             .tcp_connect_timeout(Some(interval));
 
         Ok(Self {
-            opts: Arc::new(builder.into()),
+            opts: builder.into(),
             interval,
             forever: m.is_present("forever"),
             max_retry: m.value_of("max_retry").unwrap().parse()?,
@@ -81,8 +78,7 @@ impl MySQLPinger {
 
             use mysql::DriverError;
             use mysql::Error::*;
-            let opts = Arc::clone(&self.opts);
-            match Conn::new(Opts::clone(&opts)) {
+            match Conn::new(self.opts.clone()) {
                 Ok(mut conn) => {
                     if conn.ping() {
                         return Ok(());
