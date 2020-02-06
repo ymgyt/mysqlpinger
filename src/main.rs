@@ -34,13 +34,20 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
-    match pinger.ping() {
-        Ok(_) => info!("OK (elapsed {:.3}sec)", start.elapsed().as_secs_f64()),
-        Err(err) => {
-            error!("{} (elapsed {:.3}sec)", err, start.elapsed().as_secs_f64());
-            std::process::exit(1);
+    if let Err(err) = pinger.ping() {
+        exit(1, err, start);
+    }
+    if arg.is_present("check_slave_status") {
+        if let Err(err) = pinger.check_slave_status() {
+            exit(1, err, start);
         }
-    };
+    }
+    info!("OK (elapsed {:.3}sec)", start.elapsed().as_secs_f64());
+}
+
+fn exit(code: i32, err: Box<dyn std::error::Error>, start: Instant) {
+    error!("{} (elapsed {:.3}sec)", err, start.elapsed().as_secs_f64());
+    std::process::exit(code);
 }
 
 fn init_logger(silent: bool, verbose: u64) {

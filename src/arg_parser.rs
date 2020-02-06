@@ -11,6 +11,9 @@ lazy_static! {
     # Docker
     docker run --rm -t --network=<network> ymgyt/mysqlpinger:latest \
        --user=user --pass=secret --host=<container_name> [--forever|--max-retry=20]
+
+    # Slave status check
+    mysqlpinger --pass=root --port=30304 --check-slave <db_name>
     "#,
         "Example:".yellow(),
     );
@@ -100,6 +103,12 @@ pub fn new(version: &str) -> App {
                 .takes_value(true)
                 .default_value("1s")
                 .value_name("DURATION"),
+        )
+        .arg(
+            Arg::with_name("check_slave_status")
+                .help("check slave threads status")
+                .long("check-slave")
+                .alias("check-slave-status"),
         )
         .arg(
             Arg::with_name("dbname")

@@ -1,7 +1,8 @@
 use clap::ArgMatches;
-use log::{debug, info};
+use log::{debug, info, trace};
 use mysql::{Conn, Opts, OptsBuilder};
 use parse_duration;
+use std::borrow::Borrow;
 use std::{
     borrow::Cow,
     sync::atomic::{AtomicBool, Ordering},
@@ -103,6 +104,54 @@ impl MySQLPinger {
 
             thread::sleep(self.interval);
             attempt = attempt.wrapping_add(1);
+        }
+    }
+
+    pub fn check_slave_status(&self) -> Result<(), BoxError> {
+        Conn::new(self.opts.clone())
+            .map_err(|err| -> BoxError { Box::new(err) })
+            .and_then(|conn| self.check_slave_status_with(conn))
+    }
+
+    fn check_slave_status_with(&self, mut conn: Conn) -> Result<(), BoxError> {
+        debug!("query SHOW SLAVE STATUS");
+        let mut io_running = false;
+        let mut sql_running = false;
+        if let Ok(result) = conn.query("SHOW SLAVE STATUS") {
+            for row in result {
+                let mut row = row.expect("failed to get row");
+                for (idx, column) in row.columns().iter().enumerate() {
+                    let column = column.name_str();
+                    match row.take_opt::<String, _>(idx) {
+                        Some(result) => match result {
+                            Ok(value) => match column.borrow() {
+                                "Slave_IO_Running" => {
+                                    io_running = value.eq_ignore_ascii_case("Yes");
+                                    info!("{}: {}", column, value);
+                                }
+                                "Slave_SQL_Running" => {
+                                    sql_running = value.eq_ignore_ascii_case("Yes");
+                                    info!("{}: {}", column, value);
+                                }
+                                _ => trace!("{}:{}", column, value),
+                            },
+                            Err(err) => {
+                                trace!("{}:{}", column, err);
+                            }
+                        },
+                        None => (),
+                    };
+                }
+            }
+        }
+        if io_running && sql_running {
+            Ok(())
+        } else {
+            Err(format!(
+                "Slave_IO_Running: {} Slave_SQL_Running: {}",
+                io_running, sql_running
+            )
+            .into())
         }
     }
 
